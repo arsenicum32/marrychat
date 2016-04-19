@@ -1,4 +1,4 @@
-var socket = io.connect('http://pchat.ml/chat');
+var socket = io.connect('http://pchat.cf/chat');
 var canvas = document.getElementById('canvas'),
   ctx = canvas.getContext('2d'),
   context = canvas.getContext('2d');
