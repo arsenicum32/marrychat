@@ -5,6 +5,16 @@ var canvas = document.getElementById('canvas'),
 window.addEventListener('resize', renderpage, false);
 window.onload = renderpage;
 
+var mylink = (window.location.href).split('/')[(window.location.href).split('/').length -1];
+
+socket.on('connect', function() {
+   socket.emit('client', mylink );
+});
+
+socket.on('log', function(msg){
+  console.log('server said: '+msg);
+})
+
 
 function renderpage() {
   canvas.width = window.innerWidth;
@@ -12,13 +22,12 @@ function renderpage() {
   render();
 }
 
-socket.on('load', function(msg){
-  renderLine(msg);
-})
-
 function render(){
   renderLine(dataob);
   renderLine(friendobj);
+  $.get('/data/'+mylink, function(data){
+    renderLine(data.items);
+  });
 }
 
 var stringi = '';
@@ -26,19 +35,24 @@ var stringifr = '';
 
 var friendobj = [];
 var friendobjindex = -1;
-socket.on('draw', function(msg){
-  console.log(msg);
-  stringifr +=msg;
-  if(msg.indexOf('m')!=-1){
-    friendobjindex++;
-    friendobj[friendobjindex] = {d: msg, color: FPICKER};
-  }else{
-    friendobj[friendobjindex].d+=msg;
+socket.on('draw', function(ms){
+  var fn = ms.split('&');
+  if(fn[1]===mylink){
+    var msg = fn[0];
+    stringifr +=msg;
+    if(msg.indexOf('m')!=-1){
+      friendobjindex++;
+      friendobj[friendobjindex] = {d: msg, color: FPICKER};
+    }else{
+      friendobj[friendobjindex].d+=msg;
+    }
+    renderLine(friendobj);
   }
-  renderLine(friendobj);
 });
 socket.on('color', function(msg){
-  FPICKER = msg;
+  var fn = msg.split('&');
+  if(fn[1]===mylink)
+  FPICKER = fn[0];
   // friendobj[friendobjindex].color = FPICKER;
   // renderLine(friendobj);
 });
@@ -70,20 +84,23 @@ var me = {
     indexd++;
     stringi +='m'+e.clientX+','+e.clientY;
     tempstring+='m'+e.clientX+','+e.clientY;
-    socket.emit('draw', 'm'+e.clientX+','+e.clientY );
+    socket.emit('draw', 'm'+e.clientX+','+e.clientY +'&'+mylink);
   },
   move: function(e) {
     if (go) {
       stringi +='l'+e.clientX+','+e.clientY;
       tempstring+='l'+e.clientX+','+e.clientY;
       dataob[indexd] = {d: tempstring, color: PICKER};
-      socket.emit('draw', 'l'+e.clientX+','+e.clientY );
+      socket.emit('draw', 'l'+e.clientX+','+e.clientY +'&'+mylink);
       //context.clearRect(0, 0,  canvas.width, canvas.height);
       renderLine(dataob); // {d: stringi, color: PICKER}
     }
   },
   end: function(e) {
     go = 0;
+    var tempdata = dataob[indexd];
+    tempdata.draw = mylink ;
+    socket.emit('drawend', tempdata);
     tempstring = '';
   }
 }

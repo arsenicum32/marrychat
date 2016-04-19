@@ -1,7 +1,7 @@
 var PICKER = 'black';
 var FPICKER = 'black';
 var CALLBACK = function(data){
-  socket.emit('color', data.color);
+  socket.emit('color', data.color + '&' + mylink);
 };
 
 (function () {

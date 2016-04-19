@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+  <head>
+    <title>pchat admin</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+  </head>
+  <body>
+    <h1>hi admin!</h1>
+    <button id='clear'>clear</button>
+    <p id='num'></p>
+    <main>
+    </main>
+    <script>
+      $('#clear').on('click', function(){
+        $.get('/admin/clear');
+      });
+      $.get('/admin/all', function(data){
+        $('#num').text('колличество досок: '+data.length);
+        for(var n in data){
+          $('main').append('<a href="/'+data[n]._id+'">'+data[n]._id+'</a><br>');
+        }
+      });
+    </script>
+  </body>
+</html>
